@@ -1,0 +1,5 @@
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+*.cbp
+".DS_Store"
