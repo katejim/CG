@@ -1,2 +1,3 @@
-* computer graphics
-* AU homeworks
+computer graphics
+=================
+AU homeworks
