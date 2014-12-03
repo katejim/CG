@@ -33,7 +33,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     TwWindowSize(width, height);
 }
 
-std::unique_ptr<sample_t> g_sample;
+std::unique_ptr<Triangle> g_sample;
 
 void draw_func() {
     static system_clock::time_point const start = system_clock::now();
@@ -43,17 +43,18 @@ void draw_func() {
     TwDraw();
 }
 
+string usage[3] = {"simple", "screen", "notscreen"};
 
 STATE handleCommanLineParam(std::string progName, std::string param){
     STATE state;
     string simple = "simple";
     string screen = "screen";
     string notscreen = "notscreen";
-    if (param == simple){
+    if (param == usage[0]){
         state = SIMPLE;
-    } else  if (param == screen){
+    } else  if (param == usage[1]){
         state = SCREEN;
-    } else if (param == notscreen){
+    } else if (param == usage[2]){
         state = NOTSCREEN;
     } else {
         cout << "wrong command line param; try on of this:" <<endl;
@@ -64,7 +65,24 @@ STATE handleCommanLineParam(std::string progName, std::string param){
     }
     return state;
 }
+
+void printUsage(string progName){
+    for (int  i = 0 ; i != 3; ++i){
+        cout << progName << usage[i] <<endl;
+    }
+}
 int main(int argc, char *argv[]){
+    string progName = std::string(argv[0]);
+
+    if (argc < 2) {
+        string simple = "simple";
+        string screen = "screen";
+        string notscreen = "notscreen";
+
+        cout << "wrong command line param; try on of this:" <<endl;
+        printUsage(std::string(argv[0]));
+        exit(EXIT_FAILURE);
+    }
 
     STATE state;
 
@@ -103,7 +121,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
     try {
-        g_sample.reset(new sample_t(state));
+        g_sample.reset(new Triangle(state));
     }
     catch (std::exception const &except) {
         std::cout << except.what() << std::endl;

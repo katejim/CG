@@ -10,7 +10,7 @@
 #include "state.h"
 
 using namespace glm;
-class sample_t
+class Triangle
 {
     TwBar *bar;
     bool wireframe_;
@@ -20,10 +20,10 @@ class sample_t
     quat rotation_by_control_;
     STATE state;
 public:
-    sample_t(STATE state);
+    Triangle(STATE state);
     void init_buffer();
     void init_vertex_array();
     void draw_frame(float time_from_start);
-    ~sample_t();
+    ~Triangle();
 };
 #endif

@@ -1,5 +1,5 @@
 #include "triangle.h"
-sample_t::sample_t(STATE stateM) : wireframe_(false), state(stateM  ) {
+Triangle::Triangle(STATE stateM) : wireframe_(false), state(stateM  ) {
     TwInit(TW_OPENGL_CORE, NULL);
 
     bar = TwNewBar("Parameters");
@@ -17,7 +17,7 @@ sample_t::sample_t(STATE stateM) : wireframe_(false), state(stateM  ) {
     init_vertex_array();
 }
 
-void sample_t::init_buffer() {
+void Triangle::init_buffer() {
     //generate opengl buffer & save pointr to vertexbuffer
     glGenBuffers(1, &vx_buf_);
     glBindBuffer(GL_ARRAY_BUFFER, vx_buf_);
@@ -29,7 +29,7 @@ void sample_t::init_buffer() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * 3, data, GL_STATIC_DRAW);
 }
 
-void sample_t::draw_frame(float time_from_start) {
+void Triangle::draw_frame(float time_from_start) {
     float const rotation_angle = time_from_start * 90;
 
     float const w = (float) 800;
@@ -66,7 +66,7 @@ void sample_t::draw_frame(float time_from_start) {
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void sample_t::init_vertex_array() {
+void Triangle::init_vertex_array() {
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vx_buf_);
@@ -77,7 +77,7 @@ void sample_t::init_vertex_array() {
     glBindVertexArray(0);
 }
 
-sample_t::~sample_t() {
+Triangle::~Triangle() {
     glDeleteProgram(program_);
     glDeleteShader(vs_);
     glDeleteShader(fs_);
