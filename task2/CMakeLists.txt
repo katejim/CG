@@ -8,8 +8,10 @@ find_package(OpenGL REQUIRED)
 set(SOURCE_FILES
     main.cpp
     shader.cpp
-    triangleCow.cpp
+    task2.cpp
     objloader.cpp
+    tangentspace.cpp
+    vboindexer.cpp
     )
 
 add_executable(task2 ${SOURCE_FILES})

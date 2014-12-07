@@ -7,7 +7,7 @@
 #include <memory>
 #include <iostream>
 
-#include "triangleCow.h"
+#include "task2.h"
 #include "state.h"
 
 using std::chrono::system_clock;
@@ -34,7 +34,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     TwWindowSize(width, height);
 }
 
-std::unique_ptr<Cow> g_sample;
+std::unique_ptr<Task2> g_sample;
 
 void draw_func() {
     static system_clock::time_point const start = system_clock::now();
@@ -48,7 +48,7 @@ string usage[3] = {"quad", "sphere", "cylindre"};
 
 void printUsage(string progName){
     for (int  i = 0 ; i != 3; ++i){
-        cout << progName <<" "<< usage[i] <<endl;
+        cout << progName << usage[i] <<endl;
     }
 }
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
     try {
-        g_sample.reset(new Cow(state));
+        g_sample.reset(new Task2(state));
     }
     catch (std::exception const &except) {
         std::cout << except.what() << std::endl;

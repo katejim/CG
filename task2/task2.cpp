@@ -1,10 +1,49 @@
-#include "triangleCow.h"
+#include "task2.h"
 
-Cow::Cow(STATE state_m) : state(state_m), wireframe_(false), nice_filtration_(false) , q(1.0){
+Task2::Task2(STATE state_m) : state(state_m), wireframe_(false), nice_filtration_(false) , q(1.0), power(40.0), param(0){
     TwInit(TW_OPENGL_CORE, NULL);
+    dir[0] = 2;
+    dir[1] = 2;
+    dir[2] = 0;
 
+    lightColor[0] = 1.0f;
+    lightColor[1] = 1.0f;
+    lightColor[2] = 1.0f;
+
+    ambient[0] = 0.1f;
+    ambient[1] = 0.1f;
+    ambient[2] = 0.1f;
+
+    specular[0] = 0.3f;
+    specular[1] = 0.3f;
+    specular[2] = 0.3f;
+
+
+    initTweakBar();
+
+    vs_ = create_shader(GL_VERTEX_SHADER, "vs2.glsl");
+    fs_ = create_shader(GL_FRAGMENT_SHADER, "fs2.glsl");
+    program_ = create_program(vs_, fs_);
+
+    const char * name = state == SPHERE ? "sphere.obj" : "cylinder.obj";
+    if (state == QUAD)
+        name = "quad.obj";
+    else if (state == SPHERE)
+        name = "sphere.obj";
+    else
+        name = "cylinder.obj";
+    OBJLoader::loadOBJ(name, vertices, uvs, normals);
+
+    computeTangentBasis(vertices, uvs, normals, tangents, bitangents);
+
+    init_buffer();
+    init_vertex_array();
+    init_texture();
+}
+
+void Task2::initTweakBar(){
     bar = TwNewBar("Parameters");
-    TwDefine("Parameters size='500 180' color='70 100 120' valueswidth=220 iconpos=topleft");
+    TwDefine("Parameters size='500 250' color='70 100 120' valueswidth=220 iconpos=topleft");
 
     TwAddVarRW(bar, "Wireframe mode", TW_TYPE_BOOLCPP, &wireframe_, " true='ON' false='OFF' key=w ");
 
@@ -15,72 +54,62 @@ Cow::Cow(STATE state_m) : state(state_m), wireframe_(false), nice_filtration_(fa
                " label='Object orientation' opened=true help='Change the object orientation.' ");
 
     TwAddVarRW(bar, "Q param", TW_TYPE_FLOAT, &q, "");
+    TwAddVarRW(bar, "Light power", TW_TYPE_FLOAT, &power, "");
 
 
-    vs_ = create_shader(GL_VERTEX_SHADER, "vs1.glsl");
-    fs_ = create_shader(GL_FRAGMENT_SHADER, "fs1.glsl");
-    program_ = create_program(vs_, fs_);
+    TwAddVarRW(bar, "LightDir", TW_TYPE_DIR3D, &dir, "");
 
-    string name = state == SPHERE ? "sphere.obj" : "cylinder.obj";
-    OBJLoader::loadOBJ(name.c_str(), vertices, uvs, normals);
+    TwAddVarRW(bar, "Light Color", TW_TYPE_COLOR3F, &lightColor, " colormode=rgb ");
 
-    init_buffer();
-    init_vertex_array();
-    init_texture_coordinates();
+    TwAddVarRW(bar, "Ambient ", TW_TYPE_COLOR3F, &ambient, " colormode=hls ");
+
+    TwAddVarRW(bar, "Specular ", TW_TYPE_COLOR3F, &specular, " colormode=rgb ");
 }
 
-
-void Cow::init_buffer() {
+void Task2::init_buffer() {
     //generate opengl buffer & save pointr to vertexbuffer
     glGenBuffers(1, &vx_buf_);
     glBindBuffer(GL_ARRAY_BUFFER, vx_buf_);
-    if (state == QUAD){
-        vec3 const data[6] =
-        {
-            // Left bottom triangle
-            vec3(-1.0f, 1.0f, 0.0f), vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f),
-            // Right top triangle
-            vec3(1.0f, -1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f)
-        };
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * 6, data, GL_STATIC_DRAW);
-        vertexCount = sizeof(vec3) * 6;
-    } else {
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-        vertexCount = vertices.size() * sizeof(glm::vec3);
-    }
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
     glGenBuffers(1, &uv_buffer_);
     glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 
-    if (state == QUAD){
-        vec2  const data[6] = {
-            // Left bottom triangle
-            vec2(0.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f),
-            vec2(1.0f, 1.0f), vec2(1.0f, 0.0f), vec2(0.0f, 0.0f)
-        };
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * 6, data, GL_STATIC_DRAW);
-    } else {
-        glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec3), &uvs[0], GL_STATIC_DRAW);
-    }
+    glGenBuffers(1, &norm_buf_);
+    glBindBuffer(GL_ARRAY_BUFFER, norm_buf_);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &tangentbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
+    glBufferData(GL_ARRAY_BUFFER, tangents.size()* sizeof(glm::vec3), &tangents[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &bitangentbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
+    glBufferData(GL_ARRAY_BUFFER, bitangents.size()* sizeof(glm::vec3), &bitangents[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Cow::init_texture_coordinates(){
+void Task2::init_texture(){
     Texture = loadTexture("texture.bmp");
+    TextureNormal = loadTexture("normal.bmp");
+
     TextureID  = glGetUniformLocation(program_, "myTextureSampler");
+    TextureIDNormal  = glGetUniformLocation(program_, "myTextureSamplerNormal");
 }
 
-void Cow::draw_frame(float time_from_start) {
+void Task2::draw_frame(float time_from_start) {
     handleWireFrame();
     handleColorFrame(time_from_start);
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+
+    glDrawArrays(GL_TRIANGLES, 0, vertices.size()*sizeof(vec3));
 
     if (wireframe_)
         glDisable(GL_POLYGON_OFFSET_LINE);
 }
 
-void Cow::handleWireFrame(){
+void Task2::handleWireFrame(){
     if (wireframe_) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glEnable(GL_POLYGON_OFFSET_LINE);
@@ -94,21 +123,25 @@ void Cow::handleWireFrame(){
     }
 }
 
-void Cow::handleColorFrame(float time_from_start){
+
+void Task2::handleColorFrame(float time_from_start){
     float const w = (float) 800;
     float const h = (float) 800;
     // строим матрицу проекции с aspect ratio (отношением сторон) таким же, как у окна
     mat4 const proj = perspective(45.0f, w / h, 0.1f, 100.0f);
     // преобразование из СК мира в СК камеры
-    mat4 const view = lookAt(vec3(0, 0, 6), vec3(0, 0, 0), vec3(0, 1, 0));
-    mat4 const modelview = view * mat4_cast(rotation_by_control_);
-    mat4 const mvp = proj * modelview;
 
-    GLuint program;
 
-    program = program_;
-    GLuint const model_location = glGetUniformLocation(program, "model");
-    glUniformMatrix4fv(model_location, 1, GL_FALSE, &modelview[0][0]);
+    //because cylinder model initial pos in center
+    if (state == CYLINDER)
+        param = 1;
+
+    mat4 const view = lookAt(vec3(0, 0, 6), vec3(0, param, 0), vec3(0, 1, 0));
+    mat4 const model = mat4_cast(rotation_by_control_);
+    mat4 modelViewMatrix = view * model;
+    mat3 ModelView3x3Matrix = glm::mat3(modelViewMatrix);
+    mat4 const mvp = proj * view  * model;
+
     glBindVertexArray(vao);
 
 
@@ -124,19 +157,34 @@ void Cow::handleColorFrame(float time_from_start){
     }
 
     glUseProgram(program_);
+    glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(program_, "view"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(program_, "proj"), 1, GL_FALSE, &proj[0][0]);
+    glUniformMatrix3fv(glGetUniformLocation(program_, "modelView3"), 1, GL_FALSE, &ModelView3x3Matrix[0][0]);
+
     glUniformMatrix4fv(glGetUniformLocation(program_, "mvp"), 1, GL_FALSE, &mvp[0][0]);
     glUniform1ui(glGetUniformLocation(program_, "wireframe"), wireframe_);
     glUniform1f(glGetUniformLocation(program_, "q"), (GLfloat)q);
 
+    glUniform3f(glGetUniformLocation(program_, "lightPos"), dir[0], dir[1], dir[2]);
+    glUniform3f(glGetUniformLocation(program_, "lightColor"), lightColor[0], lightColor[1], lightColor[2]);
+    glUniform3f(glGetUniformLocation(program_, "ambient"), ambient[0], ambient[1], ambient[2]);
+    glUniform3f(glGetUniformLocation(program_, "specular"), specular[0], specular[1], specular[2]);
+    glUniform1f(glGetUniformLocation(program_, "power"), (GLfloat)power);
+
     //Bind our texture in Texture Unit 0
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, Texture);
-
     // Set our "myTextureSampler" sampler to user Texture Unit 0
     glUniform1i(TextureID, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, TextureNormal);
+    // Set our "Normal	TextureSampler" sampler to user Texture Unit 0
+    glUniform1i(TextureIDNormal, 1);
 }
 
-void Cow::init_vertex_array() {
+void Task2::init_vertex_array() {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
@@ -146,34 +194,49 @@ void Cow::init_vertex_array() {
     glEnableVertexAttribArray(pos_location);
 
 
-//    glBindBuffer(GL_ARRAY_BUFFER, norm_buf_);
-//    GLuint norm_location = glGetAttribLocation(program_, "in_norm");
-//    glVertexAttribPointer(norm_location, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
-//    glEnableVertexAttribArray(norm_location);
+    glBindBuffer(GL_ARRAY_BUFFER, norm_buf_);
+    GLuint norm_location = glGetAttribLocation(program_, "in_norm");
+    glVertexAttribPointer(norm_location, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+    glEnableVertexAttribArray(norm_location);
 
     glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_);
     GLuint const pos_location_texture = (GLuint const) glGetAttribLocation(program_, "vertexUV");
     glVertexAttribPointer(pos_location_texture, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), 0);
     glEnableVertexAttribArray(pos_location_texture);
 
+    glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
+    GLuint tang_location = glGetAttribLocation(program_, "tangents");
+    glVertexAttribPointer(tang_location, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+    glEnableVertexAttribArray(tang_location);
+
+    glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
+    GLuint const bitang_location = (GLuint const) glGetAttribLocation(program_, "bi_tangents");
+    glVertexAttribPointer(bitang_location, 3 , GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+    glEnableVertexAttribArray(bitang_location);
+
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+
 
     glBindVertexArray(0);
 }
 
-Cow::~Cow() {
+Task2::~Task2() {
     glDeleteProgram(program_);
     glDeleteShader(vs_);
     glDeleteShader(fs_);
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vx_buf_);
     glDeleteBuffers(1, &norm_buf_);
+    glDeleteBuffers(1, &uv_buffer_);
+    glDeleteBuffers(1, &tangentbuffer);
+    glDeleteBuffers(1, &bitangentbuffer);
 
     TwDeleteAllBars();
     TwTerminate();
 }
 
 
-GLuint Cow::loadTexture(const char * imagepath){
+GLuint Task2::loadTexture(const char * imagepath){
     printf("Reading image %s\n", imagepath);
 
     // Data read from the header of the BMP file
@@ -233,8 +296,13 @@ GLuint Cow::loadTexture(const char * imagepath){
     // Give the image to OpenGL
     glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
 
+
+
     // OpenGL has now copied the data. Free our own version
     delete [] data;
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     // Return the ID of the texture we just created
     return textureID;

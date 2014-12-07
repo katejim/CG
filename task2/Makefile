@@ -43,18 +43,18 @@ RM = /usr/local/Cellar/cmake/3.0.1/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/kate/Documents/commonStudy/CG/task2
+CMAKE_SOURCE_DIR = /Users/kate/Documents/commonStudy/computer_graphics/task1
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/kate/Documents/commonStudy/CG/task2
+CMAKE_BINARY_DIR = /Users/kate/Documents/commonStudy/computer_graphics/task1
 
 #=============================================================================
 # Targets provided globally by CMake.
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/local/Cellar/cmake/3.0.1/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/local/Cellar/cmake/3.0.1/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -73,9 +73,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/kate/Documents/commonStudy/CG/task2/CMakeFiles /Users/kate/Documents/commonStudy/CG/task2/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/kate/Documents/commonStudy/computer_graphics/task1/CMakeFiles /Users/kate/Documents/commonStudy/computer_graphics/task1/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/kate/Documents/commonStudy/CG/task2/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/kate/Documents/commonStudy/computer_graphics/task1/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -187,29 +187,77 @@ shader.cpp.s:
 	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/shader.cpp.s
 .PHONY : shader.cpp.s
 
-triangleCow.o: triangleCow.cpp.o
-.PHONY : triangleCow.o
+tangentspace.o: tangentspace.cpp.o
+.PHONY : tangentspace.o
 
 # target to build an object file
-triangleCow.cpp.o:
-	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/triangleCow.cpp.o
-.PHONY : triangleCow.cpp.o
+tangentspace.cpp.o:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/tangentspace.cpp.o
+.PHONY : tangentspace.cpp.o
 
-triangleCow.i: triangleCow.cpp.i
-.PHONY : triangleCow.i
+tangentspace.i: tangentspace.cpp.i
+.PHONY : tangentspace.i
 
 # target to preprocess a source file
-triangleCow.cpp.i:
-	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/triangleCow.cpp.i
-.PHONY : triangleCow.cpp.i
+tangentspace.cpp.i:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/tangentspace.cpp.i
+.PHONY : tangentspace.cpp.i
 
-triangleCow.s: triangleCow.cpp.s
-.PHONY : triangleCow.s
+tangentspace.s: tangentspace.cpp.s
+.PHONY : tangentspace.s
 
 # target to generate assembly for a file
-triangleCow.cpp.s:
-	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/triangleCow.cpp.s
-.PHONY : triangleCow.cpp.s
+tangentspace.cpp.s:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/tangentspace.cpp.s
+.PHONY : tangentspace.cpp.s
+
+task2.o: task2.cpp.o
+.PHONY : task2.o
+
+# target to build an object file
+task2.cpp.o:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/task2.cpp.o
+.PHONY : task2.cpp.o
+
+task2.i: task2.cpp.i
+.PHONY : task2.i
+
+# target to preprocess a source file
+task2.cpp.i:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/task2.cpp.i
+.PHONY : task2.cpp.i
+
+task2.s: task2.cpp.s
+.PHONY : task2.s
+
+# target to generate assembly for a file
+task2.cpp.s:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/task2.cpp.s
+.PHONY : task2.cpp.s
+
+vboindexer.o: vboindexer.cpp.o
+.PHONY : vboindexer.o
+
+# target to build an object file
+vboindexer.cpp.o:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/vboindexer.cpp.o
+.PHONY : vboindexer.cpp.o
+
+vboindexer.i: vboindexer.cpp.i
+.PHONY : vboindexer.i
+
+# target to preprocess a source file
+vboindexer.cpp.i:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/vboindexer.cpp.i
+.PHONY : vboindexer.cpp.i
+
+vboindexer.s: vboindexer.cpp.s
+.PHONY : vboindexer.s
+
+# target to generate assembly for a file
+vboindexer.cpp.s:
+	$(MAKE) -f CMakeFiles/task2.dir/build.make CMakeFiles/task2.dir/vboindexer.cpp.s
+.PHONY : vboindexer.cpp.s
 
 # Help Target
 help:
@@ -229,9 +277,15 @@ help:
 	@echo "... shader.o"
 	@echo "... shader.i"
 	@echo "... shader.s"
-	@echo "... triangleCow.o"
-	@echo "... triangleCow.i"
-	@echo "... triangleCow.s"
+	@echo "... tangentspace.o"
+	@echo "... tangentspace.i"
+	@echo "... tangentspace.s"
+	@echo "... task2.o"
+	@echo "... task2.i"
+	@echo "... task2.s"
+	@echo "... vboindexer.o"
+	@echo "... vboindexer.i"
+	@echo "... vboindexer.s"
 .PHONY : help
 
 
