@@ -1,0 +1,7 @@
+
+#ifndef STATE_HPP
+#define STATE_HPP
+
+enum STATE {QUAD, SPHERE,CYLINDER, INVALID};
+
+#endif
