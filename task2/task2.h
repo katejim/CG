@@ -11,7 +11,7 @@
 #include "state.h"
 
 #include "tangentspace.hpp"
-#include "vboindexer.hpp"
+
 
 using namespace glm;
 class Task2
