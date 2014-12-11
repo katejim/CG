@@ -11,8 +11,7 @@ set(SOURCE_FILES
     task2.cpp
     objloader.cpp
     tangentspace.cpp
-    vboindexer.cpp
-    )
+        )
 
 add_executable(task2 ${SOURCE_FILES})
 
