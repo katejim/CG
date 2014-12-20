@@ -10,8 +10,7 @@ set(SOURCE_FILES
     shader.cpp
     task2.cpp
     objloader.cpp
-    tangentspace.cpp
-    controls.cpp
+    tangentspace.cpp    
         )
 
 add_executable(task2 ${SOURCE_FILES})
