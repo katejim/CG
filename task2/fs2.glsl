@@ -11,6 +11,7 @@ uniform vec3 specularr;
 uniform vec3 ambient;
 
 uniform float power;
+uniform float specularPower;
 
 
 uniform sampler2D myTextureSampler;
@@ -27,6 +28,6 @@ void main()
 	vec3 eye = normalize(EyeDirection_tangentspace);
 	vec3 R = reflect(-l, n);
 	float spec = clamp((dot(eye, R)), 0, 1);
-	vec3 specular = specularr * pow(spec, 5);
+	vec3 specular = specularr * pow(spec, specularPower);
 	color = ambientRez + diffuse + specular;
 }
