@@ -18,7 +18,7 @@ using namespace glm;
 class Task2
 {
     TwBar * bar;
-    bool wireframe_, nice_filtration_;
+    bool wireframe_, nice_filtration_, nice_filtration2_;
     GLuint vs_, fs_, program_;
     GLuint vx_buf_, norm_buf_, uv_buffer_, tangentbuffer, bitangentbuffer, elementbuffer;
     GLuint vao;
@@ -64,6 +64,7 @@ class Task2
     GLuint loadTexture(const char * imagepath);
     void init_texture();
     void initTweakBar();
+    void setNiceFiltration(bool type);
 
 };
 #endif

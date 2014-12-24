@@ -1,6 +1,6 @@
 #include "task2.h"
 
-Task2::Task2(STATE state_m, GLFWwindow * windowM) : state(state_m), window(windowM), wireframe_(false), nice_filtration_(false) , q(1.0), power(1.0), param(0), specular_power(5), zoomValue(6)
+Task2::Task2(STATE state_m, GLFWwindow * windowM) : state(state_m), window(windowM), wireframe_(false), nice_filtration_(false) ,nice_filtration2_(false), q(1.0), power(1.0), param(0), specular_power(5), zoomValue(6)
 {
     TwInit(TW_OPENGL_CORE, NULL);
     dir[0] = 1;
@@ -41,6 +41,7 @@ void Task2::initTweakBar()
     TwDefine("Parameters size='500 250' color='70 100 120' valueswidth=220 iconpos=topleft");
     TwAddVarRW(bar, "Wireframe mode", TW_TYPE_BOOLCPP, &wireframe_, " true='ON' false='OFF' key=w ");
     TwAddVarRW(bar, "Nice filtration", TW_TYPE_BOOLCPP, &nice_filtration_, " true='ON' false='OFF' key=W ");
+    TwAddVarRW(bar, "Nice filtration Normal", TW_TYPE_BOOLCPP, &nice_filtration2_, " true='ON' false='OFF' key=W ");
     TwAddVarRW(bar, "ObjRotation", TW_TYPE_QUAT4F, &rotation_by_control_,
                " label='Object orientation' opened=true help='Change the object orientation.' ");
     TwAddVarRW(bar, "Q param", TW_TYPE_FLOAT, &q, "");
@@ -79,6 +80,21 @@ void Task2::init_texture()
     TextureNormal = loadTexture("normal.bmp");
     TextureID  = glGetUniformLocation(program_, "myTextureSampler");
     TextureIDNormal  = glGetUniformLocation(program_, "myTextureSamplerNormal");
+}
+
+void Task2::setNiceFiltration(bool type){
+    if (!type)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
+    else
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    }
 }
 
 void Task2::draw_frame(float time_from_start, float zoomValue)
@@ -134,18 +150,7 @@ void Task2::handleColorFrame(float time_from_start, float zoom)
     mat4 const mvp = proj * view  * model;
     glBindVertexArray(vao);
 
-    if (!nice_filtration_)
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    }
-    else
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    }
+
 
     glUseProgram(program_);
     glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, &model[0][0]);
@@ -162,10 +167,14 @@ void Task2::handleColorFrame(float time_from_start, float zoom)
     glUniform1f(glGetUniformLocation(program_, "power"), (GLfloat)power);
     glUniform1f(glGetUniformLocation(program_, "specularPower"), (GLfloat)specular_power);
     //Bind our texture in Texture Unit 0
+
+    setNiceFiltration(nice_filtration_);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, Texture);
     // Set our "myTextureSampler" sampler to user Texture Unit 0
     glUniform1i(TextureID, 0);
+
+    setNiceFiltration(nice_filtration2_);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, TextureNormal);
     // Set our "Normal	TextureSampler" sampler to user Texture Unit 0
@@ -291,8 +300,10 @@ GLuint Task2::loadTexture(const char * imagepath)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
     // OpenGL has now copied the data. Free our own version
     delete [] data;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
     // Return the ID of the texture we just created
     return textureID;
